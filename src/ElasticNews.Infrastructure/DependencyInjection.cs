@@ -1,3 +1,4 @@
+using Elastic.Clients.Elasticsearch;
 using ElasticNews.Application.Services;
 using ElasticNews.Infrastructure.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +13,12 @@ public static class DependencyInjection
         {
             client.BaseAddress = new Uri("https://www.sozcu.com.tr/");
         });
+
+        var settings = new ElasticsearchClientSettings(new Uri("http://localhost:9200"));
+        var client = new ElasticsearchClient(settings);
+        services.AddSingleton(client);
+
+        services.AddScoped<IElasticsearchService, ElasticsearchService>();
 
         return services;
     }
