@@ -1,6 +1,7 @@
 using Elastic.Clients.Elasticsearch;
 using ElasticNews.Application.Services;
 using ElasticNews.Infrastructure.Services;
+using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ElasticNews.Infrastructure;
@@ -19,6 +20,10 @@ public static class DependencyInjection
         services.AddSingleton(client);
 
         services.AddScoped<IElasticsearchService, ElasticsearchService>();
+        services.AddScoped<INewsIndexingJob, NewsIndexingJob>();
+        services.AddScoped<INewsService, NewsService>();
+
+        services.AddHangfireServer();
 
         return services;
     }
