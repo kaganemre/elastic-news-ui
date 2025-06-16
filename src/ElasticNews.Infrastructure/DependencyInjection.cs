@@ -2,6 +2,7 @@ using Elastic.Clients.Elasticsearch;
 using ElasticNews.Application.Services;
 using ElasticNews.Infrastructure.Services;
 using Hangfire;
+using Hangfire.MemoryStorage;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ElasticNews.Infrastructure;
@@ -23,7 +24,17 @@ public static class DependencyInjection
         services.AddScoped<INewsIndexingJob, NewsIndexingJob>();
         services.AddScoped<INewsService, NewsService>();
 
+        services.AddHangfire(config =>
+        {
+            config.UseMemoryStorage();
+        });
+
         services.AddHangfireServer();
+
+        services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = "localhost:6379";
+        });
 
         return services;
     }

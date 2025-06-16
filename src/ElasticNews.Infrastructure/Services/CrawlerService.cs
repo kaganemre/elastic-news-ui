@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text.RegularExpressions;
 using ElasticNews.Application.Services;
 using ElasticNews.Domain.Entities;
@@ -30,7 +31,7 @@ public sealed class CrawlerService(HttpClient httpClient) : ICrawlerService
                 return new News
                 {
                     Id = match.Success ? match.Value : "",
-                    Title = titleNode?.InnerText.Trim() ?? "",
+                    Title = WebUtility.HtmlDecode(titleNode?.InnerText.Trim()) ?? "",
                     Url = url,
                     ImageUrl = imageNode?.GetAttributeValue("src", "") ?? ""
                 };

@@ -1,10 +1,13 @@
+using System.Text.Json;
 using ElasticNews.Application.Services;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace ElasticNews.Infrastructure.Services;
 
 public sealed class NewsIndexingJob(
     ICrawlerService crawlerService,
-    IElasticsearchService elasticsearchService) : INewsIndexingJob
+    IElasticsearchService elasticsearchService,
+    IDistributedCache cache) : INewsIndexingJob
 {
     public async Task FetchAndIndexNewsAsync()
     {
@@ -20,6 +23,9 @@ public sealed class NewsIndexingJob(
         if (newsToIndex.Any())
         {
             await elasticsearchService.IndexNewsAsync(newsToIndex);
+
+            indexedNews = await elasticsearchService.GetAllNewsAsync();
+            await cache.SetStringAsync("allNews", JsonSerializer.Serialize(indexedNews));
         }
     }
 }

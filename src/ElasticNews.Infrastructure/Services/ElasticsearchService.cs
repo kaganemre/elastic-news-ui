@@ -1,21 +1,35 @@
+using System.Net;
+using System.Text;
 using Elastic.Clients.Elasticsearch;
 using ElasticNews.Application.Services;
 using ElasticNews.Domain.Entities;
+using Newtonsoft.Json;
 
 namespace ElasticNews.Infrastructure.Services;
 
-public sealed class ElasticsearchService(ElasticsearchClient client) : IElasticsearchService
+public sealed class ElasticsearchService(ElasticsearchClient client,
+    HttpClient httpClient) : IElasticsearchService
 {
     private readonly ElasticsearchClient _client = client;
     public async Task IndexNewsAsync(IEnumerable<News> newsList)
     {
         foreach (var news in newsList)
         {
-            var response = await _client.IndexAsync(news, idx => idx.Index("news"));
-
-            if (!response.IsValidResponse)
+            news.Title = WebUtility.HtmlDecode(news.Title);
+            // var response = await _client.IndexAsync(news, idx => idx.Index("news"));
+            var json = JsonConvert.SerializeObject(news, new JsonSerializerSettings
             {
-                Console.WriteLine($"Indexing failed for {news.Id}");
+                StringEscapeHandling = StringEscapeHandling.Default
+            });
+
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            content.Headers.ContentType.CharSet = "utf-8";
+
+            var response = await httpClient.PostAsync("http://localhost:9200/news/_doc", content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"Indexing failed for {news.Id} - Status: {response.StatusCode}");
             }
         }
     }

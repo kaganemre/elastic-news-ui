@@ -1,19 +1,19 @@
-using Microsoft.AspNetCore.Mvc;
+using ElasticNews.Application.Services;
+using ElasticNews.Domain.Entities;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace ElasticNews.WebUI.Pages;
 
-public class IndexModel : PageModel
+public class IndexModel(INewsService newsService) : PageModel
 {
-    private readonly ILogger<IndexModel> _logger;
-
-    public IndexModel(ILogger<IndexModel> logger)
+    public IEnumerable<News> NewsList { get; set; } = default!;
+    public async Task OnGetAsync(string search)
     {
-        _logger = logger;
-    }
+        NewsList = await newsService.GetAllNewsAsync();
 
-    public void OnGet()
-    {
-
+        if (!string.IsNullOrEmpty(search))
+        {
+            NewsList = await newsService.SearchByTitleAsync(search);
+        }
     }
 }
