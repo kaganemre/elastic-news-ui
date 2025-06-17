@@ -1,58 +1,49 @@
-using System.Net;
-using System.Text;
 using Elastic.Clients.Elasticsearch;
 using ElasticNews.Application.Services;
 using ElasticNews.Domain.Entities;
-using Newtonsoft.Json;
 
 namespace ElasticNews.Infrastructure.Services;
 
-public sealed class ElasticsearchService(ElasticsearchClient client,
-    HttpClient httpClient) : IElasticsearchService
+public sealed class ElasticsearchService(ElasticsearchClient elasticClient) : IElasticsearchService
 {
-    private readonly ElasticsearchClient _client = client;
+    private readonly ElasticsearchClient _elasticClient = elasticClient;
     public async Task IndexNewsAsync(IEnumerable<News> newsList)
     {
         foreach (var news in newsList)
         {
-            news.Title = WebUtility.HtmlDecode(news.Title);
-            // var response = await _client.IndexAsync(news, idx => idx.Index("news"));
-            var json = JsonConvert.SerializeObject(news, new JsonSerializerSettings
+            var response = await _elasticClient.IndexAsync(news, idx => idx.Index("news"));
+
+            if (!response.IsValidResponse)
             {
-                StringEscapeHandling = StringEscapeHandling.Default
-            });
-
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-            content.Headers.ContentType.CharSet = "utf-8";
-
-            var response = await httpClient.PostAsync("http://localhost:9200/news/_doc", content);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                Console.WriteLine($"Indexing failed for {news.Id} - Status: {response.StatusCode}");
+                Console.WriteLine($"Indexing failed for {news.Id}");
             }
         }
     }
-    public async Task<IEnumerable<News>> GetAllNewsAsync()
+    public async Task<(List<News> Results, int TotalCount)> SearchAsync(string? query, int page, int pageSize)
     {
-        var response = await _client.SearchAsync<News>(s => s
-            .Indices("news")
-            .Query(q => q.MatchAll()));
+        var from = (page - 1) * pageSize;
 
-        return response.Documents;
-    }
-    public async Task<IEnumerable<News>> SearchByTitleAsync(string query)
-    {
-        var response = await _client.SearchAsync<News>(s => s
+        var response = await _elasticClient.SearchAsync<News>(s => s
             .Indices("news")
-            .Query(q => q
-                .Match(m => m
-                    .Field(f => f.Title)
-                    .Query(query)
-                )
+            .From(from)
+            .Size(pageSize)
+            .Query(string.IsNullOrEmpty(query)
+                  ? q => q.MatchAll()
+                  : q => q.QueryString(qs => qs.Query(query))
             )
         );
 
-        return response.Documents;
+        return (
+            Results: response.Documents.ToList(),
+            TotalCount: (int)response.Total
+        );
+    }
+    public async Task<List<News>> GetAllNewsAsync()
+    {
+        var response = await _elasticClient.SearchAsync<News>(s => s
+            .Indices("news")
+            .Query(q => q.MatchAll()));
+
+        return response.Documents.ToList();
     }
 }

@@ -31,10 +31,10 @@ public static class DependencyInjection
 
         services.AddHangfireServer();
 
-        services.AddStackExchangeRedisCache(options =>
-        {
-            options.Configuration = "localhost:6379";
-        });
+        // services.AddStackExchangeRedisCache(options =>
+        // {
+        //     options.Configuration = "localhost:6379";
+        // });
 
         return services;
     }

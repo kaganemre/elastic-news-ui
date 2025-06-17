@@ -4,6 +4,5 @@ namespace ElasticNews.Application.Services;
 
 public interface INewsService
 {
-    Task<IEnumerable<News>> GetAllNewsAsync();
-    Task<IEnumerable<News>> SearchByTitleAsync(string query);
+    Task<(List<News> Results, int TotalCount)> SearchAsync(string? query, int page, int pageSize);
 }
