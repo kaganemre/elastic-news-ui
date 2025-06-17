@@ -29,12 +29,14 @@ public sealed class CrawlerService(HttpClient httpClient) : ICrawlerService
                 var imageNode = card.SelectSingleNode(".//img");
                 var url = "https://www.sozcu.com.tr" + href;
                 var match = Regex.Match(url, @"p\d+$");
+                if (!match.Success)
+                    continue;
 
                 var content = await GetNewsContentAsync(href);
 
                 var newsItem = new News
                 {
-                    Id = match.Success ? match.Value : "",
+                    Id = match.Value,
                     Title = WebUtility.HtmlDecode(titleNode?.InnerText.Trim()) ?? "",
                     Url = url,
                     ImageUrl = imageNode?.GetAttributeValue("src", "") ?? "",

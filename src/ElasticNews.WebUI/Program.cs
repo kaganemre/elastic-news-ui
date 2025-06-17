@@ -11,14 +11,6 @@ builder.Services.AddInfrastructure();
 
 var app = builder.Build();
 
-app.UseHangfireDashboard();
-
-RecurringJob.AddOrUpdate<INewsIndexingJob>(
-    "news-indexing-job",
-    job => job.FetchAndIndexNewsAsync(),
-    Cron.Hourly);
-
-BackgroundJob.Enqueue<INewsIndexingJob>(job => job.FetchAndIndexNewsAsync());
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -29,10 +21,20 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseRouting();
+app.UseHangfireDashboard();
+
+RecurringJob.AddOrUpdate<INewsIndexingJob>(
+    "news-indexing-job",
+    job => job.FetchAndIndexNewsAsync(),
+    Cron.Hourly);
+
+BackgroundJob.Enqueue<INewsIndexingJob>(job => job.FetchAndIndexNewsAsync());
+
 
 app.UseAuthorization();
 
 app.MapStaticAssets();
+app.MapHangfireDashboard();
 app.MapRazorPages()
    .WithStaticAssets();
 

@@ -4,13 +4,54 @@
     ViewData["Title"] = "Home page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="bg-white p-4 d-flex justify-content-center">
+    <form class="w-100" style="max-width: 600px;" method="get">
+        <div class="input-group search-group">
+            <span class="input-group-text bg-white border-end-0">
+                <i class="bi bi-search text-muted"></i>
+            </span>
+            <input type="text" class="form-control border-start-0 shadow-none" placeholder="Haberlerde ara..."
+                name="query" />
+        </div>
+    </form>
+</div>
+
+<div class="row">
     @foreach (var news in Model.ViewModel.Results)
     {
-        <ul>
-            <li>@news.Content</li>
-        </ul>
+        <div class="col-md-3 mb-4 d-flex">
+            <div class="card w-100 d-flex flex-column">
+                <img src="@news.ImageUrl" class="card-img-top object-fit-cover" style="height: 200px;" alt="...">
+                <div class="card-body d-flex flex-column">
+                    <p class="card-title fw-bold text-clamp-2">@news.Title</p>
+                    <p class="card-text text-clamp-2 flex-grow-1">@news.Content</p>
+                </div>
+            </div>
+        </div>
     }
 </div>
+
+<nav aria-label="Page navigation example">
+    <ul class="pagination justify-content-center">
+        <li class="page-item @(Model.ViewModel.Page == 1 ? "disabled" : "")">
+            <a class="page-link" href="?query=@Model.ViewModel.Query&pageNumber=@(Model.ViewModel.Page - 1)"
+                aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+
+        @for (int i = 1; i <= Model.ViewModel.TotalPages; i++)
+        {
+            <li class="page-item @(i == Model.ViewModel.Page ? "active" : "")">
+                <a class="page-link" href="?query=@Model.ViewModel.Query&pageNumber=@i">@i</a>
+            </li>
+        }
+
+        <li class="page-item @(Model.ViewModel.Page == Model.ViewModel.TotalPages ? "disabled" : "")">
+            <a class="page-link" href="?query=@Model.ViewModel.Query&pageNumber=@(Model.ViewModel.Page + 1)"
+                aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+    </ul>
+</nav>

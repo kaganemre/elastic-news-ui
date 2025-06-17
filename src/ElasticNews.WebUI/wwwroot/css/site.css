@@ -29,3 +29,20 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+.text-clamp-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.search-group:focus-within,
+.form-control:focus {
+  box-shadow: none !important;
+  outline: none !important;
+  border-color: #ced4da;
+}
